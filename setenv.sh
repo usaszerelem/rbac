@@ -1,0 +1,7 @@
+export AIRFIND_MS_ROLES_JWTPRIVATEKEY=abcd1234
+export AIRFIND_MS_ROLES_TOKEN_EXPIRATION_MS=20d
+export NODE_ENV=development
+export MONGO_HOST='mongodb://localhost:27017'
+export REDIS_HOST='127.0.0.1'
+export REDIS_PORT=6379
+export REDIS_PASSWORD=YourMama
