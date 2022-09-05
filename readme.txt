@@ -9,9 +9,6 @@ To start Redis server:
 To check if Redis is running:
 redis-cli ping
 
-If you don't want/need a background service you can just run:
-mongod --config /usr/local/etc/mongod.conf
-
 To start mongodb/brew/mongodb-community now and restart at login:
   brew services start mongodb/brew/mongodb-community
 

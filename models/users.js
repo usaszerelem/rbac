@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema({
     },
 
     roles: {
+        /*
         type: Array,
         validate: {
             validator: function(v){
@@ -46,6 +47,8 @@ const userSchema = new mongoose.Schema({
             },
             message: 'A user should have at least one role.'
         }
+        */
+       type: [mongoose.Schema.Types.ObjectId]
     }
 });
 

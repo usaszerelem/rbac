@@ -33,7 +33,8 @@ router.put('/', [auth, admin], async(req,res) => {
     const { error } = validate(req.body);
 
     if (error) {
-        return res.status(400).send(error.details[0].message);
+        res.status(400).send(error.details[0].message);
+        return;
     }
 
     logger.info('Received data', req.body);
@@ -49,11 +50,12 @@ router.put('/', [auth, admin], async(req,res) => {
         );
 
     if (!user) {
-        return res.status(404).send(`User with id ${params.id} was not found`);
+        res.status(404).send(`User with id ${params.id} was not found`);
+        return;
     }
 
     logger.info('User updated');
-    res.status(200);
+    res.send(user);
 });
 
 // -------------------------------------------------
@@ -100,7 +102,7 @@ router.post('/', [auth, admin], async (req,res) => {
     const userMinData = _.pick(user, ['_id', 'email', 'roles']);
     logger.info('Pick returned: ' + JSON.stringify(userMinData, null, 4));
 
-    res.status(200);
+    return res.status(200);
 });
 
 // -------------------------------------------------
