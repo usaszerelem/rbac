@@ -9,35 +9,33 @@ const userInfo = {
     password: "samplepassword"
 }
 
-let createdUserId = null;
+let roleArray;
 
-const roleInfo = {
-    role: "samplerole"
-}
+describe('/api/userroles', () => {
 
-let createdRoleId = null;
-
-describe('/api/roles', () => {
-    /*
     beforeAll( async () => {
-        const user = new User({});
-        authToken = await user.generateAuthToken();
-        console.log(`Global Auth Token: ${authToken}`);
-    });
-    */
-
-    beforeEach(async () => {
         server = require ('../index');
         await createOneUser();
-        await createOneRole();
+        createRoles(3);
+
+        //authToken = await user.generateAuthToken();
+        //console.log(`Global Auth Token: ${authToken}`);
     });
 
-    afterEach(async () => {
+    afterAll( async () => {
+
+    });
+
+    beforeEach(async () => {
         server.close();
 
         // Clean up database
         await Role.deleteMany();
         await User.deleteMany();
+    });
+
+    afterEach(async () => {
+
     });
 
     describe('POST /', () => {
@@ -101,7 +99,7 @@ async function createRoles(numRoles) {
         role: "samplerole-"
     }
 
-    let roleIdList = "";
+    roleArray = new Array();
 
     for (let i = 0; i < numRoles; i++) {
         let oneRole = roleInfoBase;
@@ -112,11 +110,7 @@ async function createRoles(numRoles) {
             .send(oneRole);
 
         if (res.status === 200) {
-            if (roleIdList.length > 0) {
-                roleIdList += ',';
-            }
-
-            roleIdList += res.body._id;
+            roleArray[i] = res.body;
         } else {
             throw `createRoles() error ${res.status}`;
         }

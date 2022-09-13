@@ -3,12 +3,35 @@ const router = express.Router();
 const { User, validateUser } = require('../models/users');
 const { Role } = require('../models/roles');
 const logger = require('../utils/logger');
+const _ = require('lodash');
+
+// ----------------------------------------------------------------------
+// Get the roles associated with a user
+
+router.get('/', async (req,res) => {
+    let user = await findUser(req.query.userid);
+
+    if (!user) {
+        const msg = `User with id ${req.query.userid} was not found`;
+        logger.debug(msg);
+        res.status(400).send(msg);
+    } else {
+        let userRoles = new Array();
+
+        for (let i=0; i < user.roles.length; i++) {
+            const role = await Role.findById(user.roles[i]);
+            userRoles[i] = _.pick(role, ['_id', 'role']);
+        }
+
+        res.status(200).json(userRoles);
+    }
+});
+
+// ----------------------------------------------------------------------
+// Associate new roles with a user
 
 router.post('/', async (req,res) => {
     // Returns [roleArray, roleId].
-    // If roleId is a number, that means this roleId could
-    // not be found. Otherwise roleArray is expected to contain
-    // an array of roles that correspond to the list of roleIds
     let roleRet = await findRoles(req.query.roleid);
     let user = await findUser(req.query.userid);
 
@@ -29,11 +52,6 @@ router.post('/', async (req,res) => {
             const query = { "_id": req.query.userid };
             const id = req.query.roleid;
 
-            /*
-            const updateDocument = {
-                $push: { "roles": id }
-            };
-            */
             const updateDocument = {
                 $push: { roles: { $each: id.split(',') } }
             };
@@ -66,17 +84,18 @@ function isRoleAssociatedWithUser(user, roleArray) {
             break;
         }
     }
-/*
-    for (let oneRole in roleArray) {
-        if (user.roles.includes(oneRole._id)) {
-            isRoleAssociated = true;
-            break;
-        }
-    }
-*/
+
     return isRoleAssociated;
 }
 
+// ---------------------------------------------------------------------
+// Given a comma separated list of role IDs, ensures that these are
+// valid by looking them up in the Mongo database.
+// Return is value pair that should be interpreted as follows:
+// retVal[0] - This is an Array of Role objects that correspond to the
+//             roleId array received as a paramater. This arrayu of Role
+//             objects is only returned if all passed in roleIds are valid.
+// retVal[1] - Id of the first roleId that is not
 // ---------------------------------------------------------------------
 
 async function findRoles(roleIdList) {
