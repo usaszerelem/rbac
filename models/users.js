@@ -38,18 +38,11 @@ const userSchema = new mongoose.Schema({
         }
     },
 
-    roles: {
-        /*
-        type: Array,
-        validate: {
-            validator: function(v){
-                return v && v.length > 0;
-            },
-            message: 'A user should have at least one role.'
-        }
-        */
-       type: [mongoose.Schema.Types.ObjectId]
-    }
+    roles: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'roleSchema',
+        "default" : []       
+    }]
 });
 
 // -------------------------------------------------
@@ -77,12 +70,10 @@ userSchema.methods.generateAuthToken = async function() {
         const tokenExpireMs = config.get('tokenExpirationMs');
         const privateKey = config.get('jwtPrivateKey');
 
-        /*
         logger.debug(`Creating JSON Web Token with:`);
         logger.debug(`Roles: ${this.roles}`);
         logger.debug(`Private key: ${privateKey}`);
         logger.debug(`Expires: ${tokenExpireMs}`);
-        */
 
         let jsonToken = jwt.sign({ _id: this._id, roles: this.roles },
             privateKey,
@@ -142,12 +133,11 @@ userSchema.methods.generateAuthToken = async function() {
 
 // -------------------------------------------------
 
-function validate(user) {
+function validateUser(user) {
 
     const schema = Joi.object({
         email: Joi.string().min(10).max(255).required().email(),
-        password: Joi.string().min(4).max(255).required(),
-        roles: Joi.array().required()
+        password: Joi.string().min(4).max(255).required()
     });
 
     return schema.validate(user);
@@ -156,4 +146,4 @@ function validate(user) {
 const User = mongoose.model('User', userSchema);
 
 module.exports.User = User;
-module.exports.validate = validate;
+module.exports.validateUser = validateUser;

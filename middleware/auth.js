@@ -19,10 +19,10 @@ async function authenticate(req, res, next) {
 
         const privateKey = config.get('jwtPrivateKey');
 
-        /*
+
         logger.debug(`Token: ${token}`);
         logger.debug(`Private key: ${privateKey}`);
-        */
+
 
         const decoded = jwt.verify(token, privateKey);
         logger.debug('Decoded user information:\n' + JSON.stringify(decoded, null, 4));

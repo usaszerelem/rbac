@@ -4,13 +4,13 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const _ = require('lodash');
-const { User, validate } = require('../models/users');
+const { User, validateUser } = require('../models/users');
 const bcrypt = require('bcrypt');
 const logger = require('../utils/logger');
 
 // -------------------------------------------------
 
-router.delete('/', [auth, admin], async (req,res) => {
+router.delete('/', async (req,res) => {
     logger.info('Received User ID to delete: ' + req.query.id);
 
     const user = await User.findByIdAndRemove(req.query.id);
@@ -26,11 +26,11 @@ router.delete('/', [auth, admin], async (req,res) => {
 
 // -------------------------------------------------
 
-router.put('/', [auth, admin], async(req,res) => {
+router.put('/', async(req,res) => {
     logger.info('Received ID: ' + req.query.id);
 
     logger.info('Update user received');
-    const { error } = validate(req.body);
+    const { error } = validateUser(req.body);
 
     if (error) {
         res.status(400).send(error.details[0].message);
@@ -43,8 +43,7 @@ router.put('/', [auth, admin], async(req,res) => {
             req.query.id,
             {
                 email: req.body.email,
-                password: req.body.password,
-                roles: req.body.roles
+                password: req.body.password
             },
             { new: true }
         );
@@ -60,10 +59,10 @@ router.put('/', [auth, admin], async(req,res) => {
 
 // -------------------------------------------------
 
-router.post('/', [auth, admin], async (req,res) => {
+router.post('/', async (req,res) => {
     logger.info('User Create - Received', req.body);
 
-    const { error } = validate(req.body);
+    const { error } = validateUser(req.body);
     
     if (error) {
         logger.info('Bad validation');
@@ -82,7 +81,7 @@ router.post('/', [auth, admin], async (req,res) => {
         return res.status(400).send(msg);
     }
 
-    user = new User( _.pick(req.body, ['email', 'password', 'roles']));
+    user = new User( _.pick(req.body, ['email', 'password']));
 
     // Encrypt the user's password
 
@@ -99,10 +98,10 @@ router.post('/', [auth, admin], async (req,res) => {
     // that creation does not mean automatic authentication. This is a 
     // separate call.
 
-    const userMinData = _.pick(user, ['_id', 'email', 'roles']);
+    const userMinData = _.pick(user, ['_id', 'email']);
     logger.info('Pick returned: ' + JSON.stringify(userMinData, null, 4));
 
-    return res.status(200);
+    return res.status(200).json(userMinData);
 });
 
 // -------------------------------------------------
@@ -110,7 +109,7 @@ router.post('/', [auth, admin], async (req,res) => {
 // and the user is authorized to obtain information
 // about itself
 
-router.get('/me', auth, async (req,res) => {
+router.get('/me', async (req,res) => {
     logger.info('Received ID: ' + req.user._id);
 
     // Exclude password and possible other unwanted information
@@ -129,7 +128,7 @@ router.get('/me', auth, async (req,res) => {
 // This method is only available to administrators
 // The requestor has been authorized by the time
 // this call is made.
-router.get('/', [auth, admin], async (req,res) => {
+router.get('/', async (req,res) => {
     logger.info('Received ID: ' + req.query.id);
 
     let user = null;

@@ -26,14 +26,14 @@ router.post('/', async (req,res) => {
 
     if (!user) {
         logger.error('Invalid email');
-        return res.status(400).send('Invalid email or password.');
+        return res.status(400).send('Email not found: Invalid email or password.');
     }
 
     const validPassword = await bcrypt.compare(req.body.password, user.password);
 
     if (!validPassword) {
         logger.error('Invalid password');
-        return res.status(400).send('Invalid email or password.');
+        return res.status(400).send('Bad password: Invalid email or password.');
     }
 
     // Create auth token for user and delete any old token if exists.

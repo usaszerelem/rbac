@@ -3,6 +3,8 @@ const logger = require('../utils/logger');
 
 module.exports = function (req, res, next) {
     logger.info('Checking if user is admin');
+    logger.debug(`User: ${req.user}`);   
+    logger.debug(`Roles: ${req.user.roles}`);
 
     const result = _.contains(req.user.roles, 'admin');
 

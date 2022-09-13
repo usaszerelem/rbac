@@ -12,7 +12,7 @@ const admin = require('../middleware/admin');
 // Role is passed in the request body as:
 // { "role": "newRoleName" }
 
-router.post('/', [auth, admin], async (req,res) => {
+router.post('/', async (req,res) => {
     let isValid = await isRoleNameValidAndUnique(req.body.role);
 
     if (isValid[0]) {
@@ -32,7 +32,7 @@ router.post('/', [auth, admin], async (req,res) => {
 // Updates an existing role's name ensuring that the
 // new name is unique.
 
-router.put('/', [auth, admin], async (req,res) => {
+router.put('/', async (req,res) => {
     let isValid = await isRoleNameValidAndUnique(req.body.role);
 
     // The first cell is the error code, if any.
@@ -67,7 +67,7 @@ router.put('/', [auth, admin], async (req,res) => {
 
 // ----------------------------------------------------------------------
 
-router.delete('/', [auth, admin], async (req,res) => {
+router.delete('/', async (req,res) => {
     let role = null;
     
     try {
@@ -89,7 +89,7 @@ router.delete('/', [auth, admin], async (req,res) => {
 // Return a role based on the role's ID. If none provided then return
 // all roles
 
-router.get('/', [auth], async (req,res) => {
+router.get('/', async (req,res) => {
     if (req.query.id){
         try {
             const role = await Role.findById(req.query.id);
@@ -109,7 +109,7 @@ router.get('/', [auth], async (req,res) => {
 // ----------------------------------------------------------------------
 
 async function isRoleNameValidAndUnique(role) {
-    const { error } = validate(role);
+    const { error } = validateRole(role);
     
     if (error) {
         logger.info('Bad validation');
@@ -131,7 +131,7 @@ async function isRoleNameValidAndUnique(role) {
 
 // ----------------------------------------------------------------------
 
-function validate(role) {
+function validateRole(role) {
 
     let some = {
         role: role
