@@ -43,7 +43,7 @@ router.post('/', async (req,res) => {
         const msg = `User with id ${req.query.userid} was not found`;
         logger.debug(msg);
         res.status(400).send(msg);
-    } else if (isRoleAssociatedWithUser(user, roleRet[0]) === true) {
+    } else if (isAnyRoleAssociatedWithUser(user, roleRet[0]) === true) {
         const msg = `Some roles are already assigned to user id ${req.query.userid}`;
         logger.debug(msg);
         res.status(400).send(msg);
@@ -56,7 +56,47 @@ router.post('/', async (req,res) => {
                 $push: { roles: { $each: id.split(',') } }
             };
 
-            console.log(updateDocument);
+            await User.updateOne(query, updateDocument);
+            const user = await findUser(req.query.userid);
+
+            logger.debug(`Role added to user ${user}`);
+            res.status(200).json(user);
+        } catch(e) {
+            const msg = `Error assigning role ${req.query.roleid} to user id ${req.query.userid}\n${e.message}`;
+            logger.error(msg);
+            res.status(400).send(msg);
+        }
+    }
+});
+
+// ----------------------------------------------------------------------
+// Remove associated roles from a user
+
+router.delete('/', async (req,res) => {
+    // Returns [roleArray, roleId].
+    let roleRet = await findRoles(req.query.roleid);
+    let user = await findUser(req.query.userid);
+
+    if (roleRet[1] > 0) {
+        const msg = `Role with id ${roleRet[1]} was not found`;
+        logger.debug(msg);
+        res.status(400).send(msg);
+    } else if (!user) {
+        const msg = `User with id ${req.query.userid} was not found`;
+        logger.debug(msg);
+        res.status(400).send(msg);
+    } else if (isAllRolesAssociatedWithUser(user, roleRet[0]) === true) {
+        const msg = `Some roles are not assigned to user id ${req.query.userid}`;
+        logger.debug(msg);
+        res.status(400).send(msg);
+    } else {
+        try {
+            const query = { "_id": req.query.userid };
+            const id = req.query.roleid;
+
+            const updateDocument = {
+                $pull: { roles: { $each: id.split(',') } }
+            };
 
             await User.updateOne(query, updateDocument);
             const user = await findUser(req.query.userid);
@@ -73,7 +113,7 @@ router.post('/', async (req,res) => {
 
 // ---------------------------------------------------------------------
 
-function isRoleAssociatedWithUser(user, roleArray) {
+function isAnyRoleAssociatedWithUser(user, roleArray) {
     let isRoleAssociated = false;
 
     for (let i = 0; i < roleArray.length; i++) {
@@ -86,6 +126,23 @@ function isRoleAssociatedWithUser(user, roleArray) {
     }
 
     return isRoleAssociated;
+}
+
+// ---------------------------------------------------------------------
+
+function isAllRolesAssociatedWithUser(user, roleArray) {
+    let isAllRoleAssociated = true;
+
+    for (let i = 0; i < roleArray.length; i++) {
+        let oneRole = roleArray[i];
+
+        if (!user.roles.includes(oneRole._id)) {
+            isAllRoleAssociated = false;
+            break;
+        }
+    }
+
+    return isAllRoleAssociated;
 }
 
 // ---------------------------------------------------------------------
