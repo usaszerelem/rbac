@@ -85,7 +85,7 @@ router.delete('/', async (req,res) => {
         const msg = `User with id ${req.query.userid} was not found`;
         logger.debug(msg);
         res.status(400).send(msg);
-    } else if (isAllRolesAssociatedWithUser(user, roleRet[0]) === true) {
+    } else if (isAllRolesAssociatedWithUser(user, roleRet[0]) === false) {
         const msg = `Some roles are not assigned to user id ${req.query.userid}`;
         logger.debug(msg);
         res.status(400).send(msg);
@@ -95,16 +95,18 @@ router.delete('/', async (req,res) => {
             const id = req.query.roleid;
 
             const updateDocument = {
-                $pull: { roles: { $each: id.split(',') } }
+                $pull: { roles: { $in: id.split(',') } }
             };
+
+            logger.debug(`Removing role ${req.query.roleid} from user id ${req.query.userid}`);
 
             await User.updateOne(query, updateDocument);
             const user = await findUser(req.query.userid);
 
-            logger.debug(`Role added to user ${user}`);
+            logger.debug(`Role removed from user ${user}`);
             res.status(200).json(user);
         } catch(e) {
-            const msg = `Error assigning role ${req.query.roleid} to user id ${req.query.userid}\n${e.message}`;
+            const msg = `Error removing role ${req.query.roleid} from user id ${req.query.userid}\n${e.message}`;
             logger.error(msg);
             res.status(400).send(msg);
         }
