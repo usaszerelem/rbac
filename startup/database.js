@@ -23,6 +23,6 @@ module.exports = async function() {
         .then(() => logger.info(`Connected to ${dbUri}...`))
         .catch(err => logger.error(`Could not connected to ${dbUri}...`, err));
 
-    // var db = mongoose.connection;
-    // logger.debug('Using database: ' + db.name);
+    var db = mongoose.connection;
+    logger.debug('Using database: ' + db.name);
 }
