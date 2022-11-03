@@ -4,7 +4,8 @@
   "description": "Role management proof of concept",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll --verbose --detectOpenHandles"
+    "test": "jest --watchAll --verbose --detectOpenHandles",
+    "coverage": "jest --watchAll --verbose --detectOpenHandles --coverage"
   },
   "author": "",
   "license": "ISC",
